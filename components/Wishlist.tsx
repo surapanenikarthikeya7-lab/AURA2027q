@@ -118,11 +118,12 @@ const Wishlist: React.FC<WishlistProps> = ({
                         {product.name}
                       </h2>
                       <span className="text-base font-medium text-[#2C2A26] tabular-nums shrink-0">
-                        ${product.price}
+                        ₹{product.price}
                       </span>
                     </div>
                     <p className="text-xs uppercase tracking-widest text-[#A8A29E] mb-2">
                       {product.category}
+                      {product.availability === 'Out of Stock' ? ' · Out of Stock' : ''}
                     </p>
                     <p className="text-sm font-light text-[#5D5A53] leading-relaxed">
                       {product.description}
@@ -132,10 +133,11 @@ const Wishlist: React.FC<WishlistProps> = ({
                   <div className="flex items-center gap-4 pt-2">
                     <button
                       type="button"
+                      disabled={product.availability === 'Out of Stock'}
                       onClick={() => onAddToCart(product)}
-                      className="flex-1 py-3.5 px-5 bg-[#2C2A26] text-[#F5F2EB] text-xs uppercase tracking-widest font-medium hover:bg-[#433E38] transition-colors whitespace-nowrap"
+                      className="flex-1 py-3.5 px-5 bg-[#2C2A26] text-[#F5F2EB] text-xs uppercase tracking-widest font-medium hover:bg-[#433E38] transition-colors whitespace-nowrap disabled:bg-[#A8A29E] disabled:cursor-not-allowed"
                     >
-                      Add to Cart
+                      {product.availability === 'Out of Stock' ? 'Out of Stock' : 'Add to Cart'}
                     </button>
                     <button
                       type="button"

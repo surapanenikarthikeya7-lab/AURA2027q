@@ -87,9 +87,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
           {/* Right: Details */}
           <div className="flex flex-col justify-center max-w-xl">
-             <span className="text-sm font-medium text-[#A8A29E] uppercase tracking-widest mb-2">{product.category}</span>
+             <span className="text-sm font-medium text-[#A8A29E] uppercase tracking-widest mb-2">
+               {product.category}
+               {product.availability === 'Out of Stock' ? ' · Out of Stock' : ''}
+             </span>
              <h1 className="text-4xl md:text-5xl font-serif text-[#2C2A26] mb-4">{product.name}</h1>
-             <span className="text-2xl font-light text-[#2C2A26] mb-8">${product.price}</span>
+             <span className="text-2xl font-light text-[#2C2A26] mb-8 tabular-nums">₹{product.price}</span>
              
              <p className="text-[#5D5A53] leading-relaxed font-light text-lg mb-8 border-b border-[#D6D1C7] pb-8">
                {product.longDescription || product.description}
@@ -119,10 +122,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
              <div className="flex flex-col gap-4">
                <button 
                  type="button"
+                 disabled={product.availability === 'Out of Stock'}
                  onClick={() => onAddToCart(product)}
-                 className="w-full py-5 bg-[#2C2A26] text-[#F5F2EB] uppercase tracking-widest text-sm font-medium hover:bg-[#433E38] transition-colors"
+                 className="w-full py-5 bg-[#2C2A26] text-[#F5F2EB] uppercase tracking-widest text-sm font-medium hover:bg-[#433E38] transition-colors disabled:bg-[#A8A29E] disabled:cursor-not-allowed"
                >
-                 Add to Cart — ${product.price}
+                 {product.availability === 'Out of Stock'
+                   ? 'Out of Stock'
+                   : `Add to Cart — ₹${product.price}`}
                </button>
                <button
                  type="button"

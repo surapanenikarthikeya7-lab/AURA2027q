@@ -14,7 +14,11 @@ interface NavbarProps {
   wishlistCount: number;
   onOpenWishlist: () => void;
   isWishlistActive?: boolean;
+  onOpenPortal?: () => void;
+  isPortalActive?: boolean;
   forceSolid?: boolean;
+  websiteName?: string;
+  logoUrl?: string | null;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -24,7 +28,11 @@ const Navbar: React.FC<NavbarProps> = ({
   wishlistCount,
   onOpenWishlist,
   isWishlistActive = false,
-  forceSolid = false
+  onOpenPortal,
+  isPortalActive = false,
+  forceSolid = false,
+  websiteName = BRAND_NAME,
+  logoUrl = null,
 }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -54,6 +62,12 @@ const Navbar: React.FC<NavbarProps> = ({
       onOpenWishlist();
   };
 
+  const handlePortalClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      setMobileMenuOpen(false);
+      if (onOpenPortal) onOpenPortal();
+  };
+
   const useSolidStyle = scrolled || mobileMenuOpen || forceSolid;
   const textColorClass = useSolidStyle ? 'text-[#2C2A26]' : 'text-[#F5F2EB]';
 
@@ -71,18 +85,25 @@ const Navbar: React.FC<NavbarProps> = ({
             onClick={(e) => {
                 e.preventDefault();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                onNavClick(e, ''); // Pass empty string to just reset to home
+                onNavClick(e, '');
             }}
-            className={`text-3xl font-serif font-medium tracking-tight z-50 relative transition-colors duration-500 whitespace-nowrap shrink-0 ${textColorClass}`}
+            className={`flex items-center gap-3 text-3xl font-serif font-medium tracking-tight z-50 relative transition-colors duration-500 whitespace-nowrap shrink-0 ${textColorClass}`}
           >
-            {BRAND_NAME}
+            {logoUrl && (
+              <img
+                src={logoUrl}
+                alt={websiteName}
+                referrerPolicy="no-referrer"
+                className="h-8 w-auto max-w-[120px] object-contain"
+              />
+            )}
+            <span>{websiteName}</span>
           </a>
           
           {/* Center Links - Desktop */}
           <div className={`hidden md:flex items-center gap-10 text-sm font-medium tracking-widest uppercase transition-colors duration-500 ${textColorClass}`}>
             <a href="#products" onClick={(e) => handleLinkClick(e, 'products')} className="hover:opacity-60 transition-opacity whitespace-nowrap shrink-0">Shop</a>
             <a href="#about" onClick={(e) => handleLinkClick(e, 'about')} className="hover:opacity-60 transition-opacity whitespace-nowrap shrink-0">About</a>
-            <a href="#journal" onClick={(e) => handleLinkClick(e, 'journal')} className="hover:opacity-60 transition-opacity whitespace-nowrap shrink-0">Journal</a>
             <button
               type="button"
               onClick={handleWishlistClick}
@@ -92,6 +113,17 @@ const Navbar: React.FC<NavbarProps> = ({
             >
               Wishlist{wishlistCount > 0 ? ` (${wishlistCount})` : ''}
             </button>
+            {onOpenPortal && (
+              <button
+                type="button"
+                onClick={handlePortalClick}
+                className={`uppercase tracking-widest hover:opacity-60 transition-opacity whitespace-nowrap shrink-0 pb-0.5 border-b ${
+                  isPortalActive ? 'border-current' : 'border-transparent'
+                }`}
+              >
+                Portal
+              </button>
+            )}
           </div>
 
           {/* Right Actions */}
@@ -132,7 +164,6 @@ const Navbar: React.FC<NavbarProps> = ({
           <div className="flex flex-col items-center space-y-8 text-xl font-serif font-medium text-[#2C2A26]">
             <a href="#products" onClick={(e) => handleLinkClick(e, 'products')} className="hover:opacity-60 transition-opacity">Shop</a>
             <a href="#about" onClick={(e) => handleLinkClick(e, 'about')} className="hover:opacity-60 transition-opacity">About</a>
-            <a href="#journal" onClick={(e) => handleLinkClick(e, 'journal')} className="hover:opacity-60 transition-opacity">Journal</a>
             <button
                 type="button"
                 onClick={handleWishlistClick}
@@ -140,6 +171,15 @@ const Navbar: React.FC<NavbarProps> = ({
             >
                 Wishlist{wishlistCount > 0 ? ` (${wishlistCount})` : ''}
             </button>
+            {onOpenPortal && (
+              <button
+                type="button"
+                onClick={handlePortalClick}
+                className="hover:opacity-60 transition-opacity"
+              >
+                Portal
+              </button>
+            )}
             <button 
                 type="button"
                 onClick={handleCartClick} 

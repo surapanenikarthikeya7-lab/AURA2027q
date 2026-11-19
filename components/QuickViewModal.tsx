@@ -86,6 +86,7 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
           <div>
             <span className="block text-xs font-medium uppercase tracking-[0.2em] text-[#A8A29E] mb-2">
               {product.category}
+              {product.availability === 'Out of Stock' ? ' · Out of Stock' : ''}
             </span>
             <h2 id="quick-view-title" className="text-3xl font-serif text-[#2C2A26] mb-1">
               {product.name}
@@ -94,7 +95,7 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
               {product.tagline}
             </p>
             <p className="text-xl font-light text-[#2C2A26] tabular-nums pb-5 mb-5 border-b border-[#D6D1C7]">
-              ${product.price}
+              ₹{product.price}
             </p>
             <p className="text-sm md:text-base text-[#5D5A53] font-light leading-relaxed mb-5">
               {product.description}
@@ -112,13 +113,16 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
           <div className="flex flex-col gap-3 pt-2">
             <button
               type="button"
+              disabled={product.availability === 'Out of Stock'}
               onClick={() => {
                 onAddToCart(product);
                 onClose();
               }}
-              className="w-full py-4 bg-[#2C2A26] text-[#F5F2EB] uppercase tracking-widest text-xs font-medium hover:bg-[#433E38] transition-colors"
+              className="w-full py-4 bg-[#2C2A26] text-[#F5F2EB] uppercase tracking-widest text-xs font-medium hover:bg-[#433E38] transition-colors disabled:bg-[#A8A29E] disabled:cursor-not-allowed"
             >
-              Add to Cart — ${product.price}
+              {product.availability === 'Out of Stock'
+                ? 'Out of Stock'
+                : `Add to Cart — ₹${product.price}`}
             </button>
 
             <div className="flex items-center justify-between gap-4 pt-1">

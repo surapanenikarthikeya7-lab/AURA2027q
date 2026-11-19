@@ -76,8 +76,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
       
       <div className="text-center">
         <h3 className="text-base font-serif font-medium text-[#2C2A26] mb-0.5 group-hover:opacity-70 transition-opacity">{product.name}</h3>
-        <p className="text-[11px] font-light text-[#5D5A53] mb-1 tracking-wide uppercase">{product.category}</p>
-        <span className="text-sm font-medium text-[#2C2A26] block tabular-nums">${product.price}</span>
+        <p className="text-[11px] font-light text-[#5D5A53] mb-1 tracking-wide uppercase">
+          {product.category}
+          {product.availability === 'Out of Stock' ? ' · Out of Stock' : ''}
+        </p>
+        <span className="text-sm font-medium text-[#2C2A26] block tabular-nums">₹{product.price}</span>
         <button
           type="button"
           onClick={(e) => {

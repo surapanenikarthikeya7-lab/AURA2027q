@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 
 import React from 'react';
 
@@ -10,12 +10,44 @@ export interface Product {
   name: string;
   tagline: string;
   description: string;
-  longDescription?: string;
+  longDescription?: string | null;
   price: number;
-  category: 'Audio' | 'Wearable' | 'Mobile' | 'Home';
+  category: string;
+  availability?: 'Available' | 'Out of Stock' | string;
   imageUrl: string;
   gallery?: string[];
   features: string[];
+}
+
+export interface WebsiteSettings {
+  id?: number;
+  websiteName: string;
+  logoUrl: string | null;
+  heroBackgroundUrl: string | null;
+  contactEmail: string;
+  contactPhone: string;
+  contactAddress: string;
+  upiId: string;
+  upiReceiverName: string;
+}
+
+export interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export interface CustomerProfile {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  profilePictureUrl: string | null;
+  ordersCount: number;
+  totalSpent: number;
+  createdAt: string;
 }
 
 export interface JournalArticle {
@@ -24,7 +56,7 @@ export interface JournalArticle {
   date: string;
   excerpt: string;
   image: string;
-  content: React.ReactNode; // Allowing JSX for rich formatting/poems
+  content: React.ReactNode;
 }
 
 export interface ChatMessage {
@@ -40,9 +72,11 @@ export enum LoadingState {
   SUCCESS = 'SUCCESS'
 }
 
-export type ViewState = 
+export type ViewState =
   | { type: 'home' }
-  | { type: 'product', product: Product }
-  | { type: 'journal', article: JournalArticle }
+  | { type: 'product'; product: Product }
+  | { type: 'journal'; article: JournalArticle }
   | { type: 'wishlist' }
-  | { type: 'checkout' };
+  | { type: 'checkout' }
+  | { type: 'admin' }
+  | { type: 'portal' };

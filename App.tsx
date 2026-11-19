@@ -1,228 +1,120 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 
-
-import React, { useState, useEffect, useMemo } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import ProductGrid from './components/ProductGrid';
-import About from './components/About';
-import Journal from './components/Journal';
-import Assistant from './components/Assistant';
-import Footer from './components/Footer';
-import ProductDetail from './components/ProductDetail';
-import JournalDetail from './components/JournalDetail';
-import CartDrawer from './components/CartDrawer';
-import Checkout from './components/Checkout';
-import Wishlist from './components/Wishlist';
+import React, { useState, useEffect, useCallback } from 'react';
+import AdminPortal from './components/admin/AdminPortal';
+import CustomerPortal from './components/portal/CustomerPortal';
 import { PRODUCTS } from './constants';
-import { Product, ViewState } from './types';
+import { Product, WebsiteSettings } from './types';
 
-const WISHLIST_STORAGE_KEY = 'aura_wishlist_ids';
+const DEFAULT_WEBSITE_SETTINGS: WebsiteSettings = {
+  websiteName: 'Aura',
+  logoUrl: null,
+  heroBackgroundUrl:
+    'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=2000',
+  contactEmail: 'concierge@auraquietliving.com',
+  contactPhone: '+91 92903 17064',
+  contactAddress: 'Bengaluru, India',
+  upiId: '9290317064@fam',
+  upiReceiverName: 'Aura Quiet Living',
+};
 
 function App() {
-  const [view, setView] = useState<ViewState>({ type: 'home' });
-  const [cartItems, setCartItems] = useState<Product[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem(WISHLIST_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed.filter((id): id is string => typeof id === 'string');
-        }
-      }
-    } catch {
-      // Ignore storage read errors in restricted environments
+  const [mode, setMode] = useState<'home' | 'admin'>(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#admin') {
+      return 'admin';
     }
-    return [];
+    return 'home';
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(wishlistIds));
-    } catch {
-      // Ignore storage write errors in restricted environments
-    }
-  }, [wishlistIds]);
-
-  const wishlistItems = useMemo(
-    () => PRODUCTS.filter((p) => wishlistIds.includes(p.id)),
-    [wishlistIds]
+  const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [websiteSettings, setWebsiteSettings] = useState<WebsiteSettings>(
+    DEFAULT_WEBSITE_SETTINGS
   );
 
-  // Handle navigation (clicks on Navbar or Footer links)
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
-    e.preventDefault();
-    
-    // If we are not home, go home first
-    if (view.type !== 'home') {
-      setView({ type: 'home' });
-      // Allow state update to render Home before scrolling
-      setTimeout(() => scrollToSection(targetId), 0);
-    } else {
-      scrollToSection(targetId);
-    }
-  };
-
-  const scrollToSection = (targetId: string) => {
-    if (!targetId) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-    }
-    
-    const element = document.getElementById(targetId);
-    if (element) {
-      // Manual scroll calculation to account for fixed header
-      const headerOffset = 85;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
-
-      try {
-        window.history.pushState(null, '', `#${targetId}`);
-      } catch (err) {
-        // Ignore SecurityError in restricted environments
+  const fetchStorefront = useCallback(async () => {
+    try {
+      const response = await fetch('/api/storefront', { cache: 'no-store' });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (Array.isArray(data.products)) {
+        setProducts(data.products);
       }
+      if (data.websiteSettings) {
+        setWebsiteSettings((prev) => ({
+          ...prev,
+          ...data.websiteSettings,
+        }));
+      }
+    } catch {
+      // Preserve loaded catalog when offline or during transient reload
     }
+  }, []);
+
+  useEffect(() => {
+    fetchStorefront();
+  }, [fetchStorefront]);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      if (window.location.hash === '#admin') {
+        setMode('admin');
+      } else {
+        setMode('home');
+      }
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  useEffect(() => {
+    if (websiteSettings.websiteName) {
+      document.title = `${websiteSettings.websiteName} — Quiet Living`;
+    }
+  }, [websiteSettings.websiteName]);
+
+  const openAdmin = () => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    try {
+      window.history.pushState(null, '', '#admin');
+    } catch {
+      // Ignore SecurityError in restricted environments
+    }
+    setMode('admin');
   };
 
-  const addToCart = (product: Product) => {
-    setCartItems([...cartItems, product]);
-    setIsCartOpen(true);
+  const handleBackFromAdmin = () => {
+    fetchStorefront();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    try {
+      window.history.replaceState(null, '', '#');
+    } catch {
+      // Ignore SecurityError in restricted environments
+    }
+    setMode('home');
   };
 
-  const removeFromCart = (index: number) => {
-    const newItems = [...cartItems];
-    newItems.splice(index, 1);
-    setCartItems(newItems);
-  };
-
-  const toggleWishlist = (productId: string) => {
-    setWishlistIds((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
+  if (mode === 'admin') {
+    return (
+      <AdminPortal
+        websiteName={websiteSettings.websiteName}
+        logoUrl={websiteSettings.logoUrl}
+        onBackToStore={handleBackFromAdmin}
+        onStorefrontUpdated={fetchStorefront}
+      />
     );
-  };
-
-  const removeFromWishlist = (productId: string) => {
-    setWishlistIds((prev) => prev.filter((id) => id !== productId));
-  };
-
-  const clearWishlist = () => {
-    setWishlistIds([]);
-  };
-
-  const openWishlist = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setView({ type: 'wishlist' });
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-[#F5F2EB] font-sans text-[#2C2A26] selection:bg-[#D6D1C7] selection:text-[#2C2A26]">
-      {view.type !== 'checkout' && (
-        <Navbar 
-            onNavClick={handleNavClick} 
-            cartCount={cartItems.length}
-            onOpenCart={() => setIsCartOpen(true)}
-            wishlistCount={wishlistItems.length}
-            onOpenWishlist={openWishlist}
-            isWishlistActive={view.type === 'wishlist'}
-            forceSolid={view.type === 'product' || view.type === 'wishlist'}
-        />
-      )}
-      
-      <main>
-        {view.type === 'home' && (
-          <>
-            <Hero />
-            <ProductGrid
-              onProductClick={(p) => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                setView({ type: 'product', product: p });
-              }}
-              onAddToCart={addToCart}
-              wishlistIds={wishlistIds}
-              onToggleWishlist={toggleWishlist}
-            />
-            <About />
-            <Journal onArticleClick={(a) => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                setView({ type: 'journal', article: a });
-            }} />
-          </>
-        )}
-
-        {view.type === 'product' && (
-          <ProductDetail 
-            product={view.product} 
-            onBack={() => {
-              setView({ type: 'home' });
-              setTimeout(() => scrollToSection('products'), 50);
-            }}
-            onAddToCart={addToCart}
-            isWishlisted={wishlistIds.includes(view.product.id)}
-            onToggleWishlist={toggleWishlist}
-          />
-        )}
-
-        {view.type === 'wishlist' && (
-          <Wishlist
-            items={wishlistItems}
-            onBackToShop={() => {
-              setView({ type: 'home' });
-              setTimeout(() => scrollToSection('products'), 50);
-            }}
-            onProductClick={(p) => {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              setView({ type: 'product', product: p });
-            }}
-            onRemoveFromWishlist={removeFromWishlist}
-            onAddToCart={addToCart}
-            onClearWishlist={clearWishlist}
-          />
-        )}
-
-        {view.type === 'journal' && (
-          <JournalDetail 
-            article={view.article} 
-            onBack={() => setView({ type: 'home' })}
-          />
-        )}
-
-        {view.type === 'checkout' && (
-            <Checkout 
-                items={cartItems}
-                onBack={() => setView({ type: 'home' })}
-                onOrderComplete={() => setCartItems([])}
-            />
-        )}
-      </main>
-
-      {view.type !== 'checkout' && <Footer onLinkClick={handleNavClick} />}
-      
-      <Assistant />
-      
-      <CartDrawer 
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        items={cartItems}
-        onRemoveItem={removeFromCart}
-        onCheckout={() => {
-            setIsCartOpen(false);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            setView({ type: 'checkout' });
-        }}
-      />
-    </div>
+    <CustomerPortal
+      products={products}
+      websiteSettings={websiteSettings}
+      onRefreshStorefront={fetchStorefront}
+      onOpenAdmin={openAdmin}
+    />
   );
 }
 

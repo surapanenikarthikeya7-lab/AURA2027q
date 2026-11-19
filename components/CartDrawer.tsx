@@ -66,7 +66,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items, onRemov
                   <div>
                     <div className="flex justify-between items-start">
                         <h3 className="font-serif text-[#2C2A26]">{item.name}</h3>
-                        <span className="text-sm font-light text-[#2C2A26]">${item.price}</span>
+                        <span className="text-sm font-light text-[#2C2A26] tabular-nums">₹{item.price}</span>
                     </div>
                     <p className="text-xs text-[#A8A29E] uppercase tracking-widest mt-1">{item.category}</p>
                   </div>
@@ -86,7 +86,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items, onRemov
         <div className="p-6 border-t border-[#D6D1C7] bg-[#EBE7DE]/30">
           <div className="flex justify-between items-center mb-6">
             <span className="text-sm font-medium uppercase tracking-widest text-[#5D5A53]">Subtotal</span>
-            <span className="text-xl font-serif text-[#2C2A26]">${total}</span>
+            <span className="text-xl font-serif text-[#2C2A26] tabular-nums">₹{total}</span>
           </div>
           <p className="text-xs text-[#A8A29E] mb-6 text-center">Shipping and taxes calculated at checkout.</p>
           <button 

@@ -5,16 +5,14 @@
 
 
 import React, { useState, useMemo } from 'react';
-import { PRODUCTS } from '../constants';
 import { Product } from '../types';
 import ProductCard from './ProductCard';
 import QuickViewModal from './QuickViewModal';
 
-const categories = ['All', 'Audio', 'Wearable', 'Mobile', 'Home'];
-
 type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
 
 interface ProductGridProps {
+  products: Product[];
   onProductClick: (product: Product) => void;
   onAddToCart: (product: Product) => void;
   wishlistIds: string[];
@@ -22,6 +20,7 @@ interface ProductGridProps {
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({
+  products,
   onProductClick,
   onAddToCart,
   wishlistIds,
@@ -31,10 +30,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [sortBy, setSortBy] = useState<SortOption>('featured');
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
+  const categories = useMemo(() => {
+    const base = ['All', 'Audio', 'Wearable', 'Mobile', 'Home'];
+    const extras = products
+      .map((p) => p.category)
+      .filter((c) => c && !base.includes(c));
+    return Array.from(new Set([...base, ...extras]));
+  }, [products]);
+
   const filteredAndSortedProducts = useMemo(() => {
     const filtered = activeCategory === 'All'
-      ? PRODUCTS
-      : PRODUCTS.filter(p => p.category === activeCategory);
+      ? products
+      : products.filter(p => p.category === activeCategory);
 
     if (sortBy === 'featured') return filtered;
 
@@ -52,7 +59,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           return 0;
       }
     });
-  }, [activeCategory, sortBy]);
+  }, [products, activeCategory, sortBy]);
 
   return (
     <section id="products" className="py-24 px-6 md:px-12 bg-[#F5F2EB]">

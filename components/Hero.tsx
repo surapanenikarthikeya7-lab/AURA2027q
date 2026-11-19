@@ -6,7 +6,11 @@
 
 import React from 'react';
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  heroBackgroundUrl?: string | null;
+}
+
+const Hero: React.FC<HeroProps> = ({ heroBackgroundUrl }) => {
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
     const element = document.getElementById(targetId);
@@ -31,15 +35,20 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative w-full h-screen min-h-[800px] overflow-hidden bg-[#D6D1C7]">
+    <section className="relative w-full h-screen min-h-[800px] overflow-hidden bg-[#2C2A26]">
       
-      {/* Background Image - Serene Nature */}
+      {/* Background Image - Configurable from Admin Website Profile */}
       <div className="absolute inset-0 w-full h-full">
-        <img 
-            src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=2000" 
-            alt="Serene misty landscape" 
+        {heroBackgroundUrl ? (
+          <img 
+            src={heroBackgroundUrl} 
+            alt="Homepage serene backdrop" 
+            referrerPolicy="no-referrer"
             className="w-full h-full object-cover grayscale contrast-[0.7] brightness-[0.95] animate-[pulse_15s_ease-in-out_infinite_alternate]"
-        />
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-[#5D5A53] via-[#3A3732] to-[#1F1D1A]" />
+        )}
         {/* Warmer Brown Overlay for Richness */}
         <div className="absolute inset-0 bg-[#433E38]/40 mix-blend-multiply"></div>
         {/* Deep Sepia Tone for Shadow Depth */}
